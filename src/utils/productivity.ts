@@ -1,4 +1,4 @@
-import { Habit, HabitEntry } from '../models/types';
+import type { Habit, HabitEntry } from '../models/types';
 
 export type ProductivityScore = 'Productive' | 'Mid' | 'Unproductive' | 'No Data';
 
