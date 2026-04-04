@@ -1,15 +1,16 @@
 import React, { useState } from 'react';
 import { format, subDays, addDays } from 'date-fns';
-import { Check, Plus, ChevronLeft, ChevronRight, Activity, CalendarDays, CheckCircle2, TrendingUp } from 'lucide-react';
+import { Check, Plus, ChevronLeft, ChevronRight, Activity, CalendarDays, CheckCircle2, TrendingUp, Info } from 'lucide-react';
 import { useHabits } from './hooks/useHabits';
 import { calculateDailyProductivity } from './utils/productivity';
-import type { HabitType } from './models/types';
+import type { HabitType, Habit } from './models/types';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 
 function App() {
   const { habits, entries, addHabit, toggleHabitEntry, getEntriesForDate } = useHabits();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
 
   const dateString = format(currentDate, 'yyyy-MM-dd');
   const displayDate = format(currentDate, 'MMM dd, yyyy');
@@ -61,91 +62,106 @@ function App() {
         <p style={{ color: 'var(--text-secondary)' }}>Master your daily habits</p>
       </header>
 
-      <div className="date-nav glass-panel">
-        <button className="btn-icon" onClick={handlePrevDay}><ChevronLeft /></button>
-        <div style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-          <CalendarDays size={20} /> {displayDate}
-        </div>
-        <button className="btn-icon" onClick={handleNextDay}><ChevronRight /></button>
-      </div>
-
-      <div className="glass-panel productivity-card">
-        <Activity size={32} style={{ color: 'var(--secondary)' }} />
-        <h3>Daily Productivity Prediction</h3>
-        <div className={`productivity-score score-${productivity.split(' ')[0]}`}>
-          {productivity}
-        </div>
-        <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Based on your measurements and completions.</p>
-        
-        {habits.length > 0 && (
-          <div className="chart-container">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={chartData}>
-                <XAxis dataKey="name" stroke="var(--text-secondary)" />
-                <YAxis stroke="var(--text-secondary)" />
-                <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{ borderRadius: '12px', background: 'var(--surface-color)', border: 'none' }} />
-                <Bar dataKey="value" fill="var(--primary)" radius={[8, 8, 0, 0]} />
-              </BarChart>
-            </ResponsiveContainer>
+      <div className="dashboard-grid">
+        <div className="dashboard-sidebar">
+          <div className="date-nav glass-panel">
+            <button className="btn-icon" onClick={handlePrevDay}><ChevronLeft /></button>
+            <div style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CalendarDays size={20} /> {displayDate}
+            </div>
+            <button className="btn-icon" onClick={handleNextDay}><ChevronRight /></button>
           </div>
-        )}
-      </div>
 
-      <div className="header-flex" style={{ marginBottom: '1rem' }}>
-        <h2>Today's Habits <span style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({completedCount}/{habits.length})</span></h2>
-        <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
-          <Plus size={18} style={{ marginRight: '6px', verticalAlign: 'middle' }}/> 
-          Add Habit
-        </button>
-      </div>
-
-      <div className="habit-list">
-        {habits.length === 0 ? (
-          <div className="glass-panel" style={{ textAlign: 'center', padding: '3rem' }}>
-            <TrendingUp size={48} style={{ color: 'var(--border-color)', marginBottom: '1rem' }} />
-            <p style={{ color: 'var(--text-secondary)' }}>No habits created yet. Start building your routine!</p>
+          <div className="glass-panel productivity-card">
+            <Activity size={32} style={{ color: 'var(--secondary)' }} />
+            <h3>Daily Productivity Prediction</h3>
+            <div className={`productivity-score score-${productivity.split(' ')[0]}`}>
+              {productivity}
+            </div>
+            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Based on your measurements and completions.</p>
+            
+            {habits.length > 0 && (
+              <div className="chart-container">
+                <ResponsiveContainer width="100%" height="100%">
+                  <BarChart data={chartData}>
+                    <XAxis dataKey="name" stroke="var(--text-secondary)" />
+                    <YAxis stroke="var(--text-secondary)" />
+                    <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{ borderRadius: '12px', background: 'var(--surface-color)', border: 'none' }} />
+                    <Bar dataKey="value" fill="var(--primary)" radius={[8, 8, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            )}
           </div>
-        ) : (
-          habits.map((habit) => {
-            const entry = todayEntries.find((e) => e.habitId === habit.id);
-            const isCompleted = habit.type === 'YES_NO' ? entry?.completed : (habit.target && entry?.value ? entry.value >= habit.target : false);
+        </div>
 
-            return (
-              <div key={habit.id} className="habit-card">
-                <div className="habit-info">
-                  <div className="habit-icon" style={{ background: `${habit.color}20`, color: habit.color }}>
-                    {isCompleted ? <CheckCircle2 /> : <Activity />}
-                  </div>
-                  <div>
-                    <div className="habit-title">{habit.name}</div>
-                    <div className="habit-desc">
-                      {habit.type === 'MEASUREMENT' && `Target: ${habit.target} ${habit.unit || ''}`}
+        <div className="dashboard-main">
+          <div className="header-flex" style={{ marginBottom: '1.5rem' }}>
+            <h2>Today's Habits <span style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({completedCount}/{habits.length})</span></h2>
+            <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
+              <Plus size={18} style={{ marginRight: '6px', verticalAlign: 'middle' }}/> 
+              Add Habit
+            </button>
+          </div>
+
+          <div className="habit-list">
+            {habits.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+                <TrendingUp size={64} style={{ color: 'var(--border-color)', marginBottom: '1rem' }} />
+                <p style={{ color: 'var(--text-secondary)', fontSize: '1.1rem' }}>No habits created yet. Start building your routine!</p>
+              </div>
+            ) : (
+              habits.map((habit) => {
+                const entry = todayEntries.find((e) => e.habitId === habit.id);
+                const isCompleted = habit.type === 'YES_NO' ? entry?.completed : (habit.target && entry?.value ? entry.value >= habit.target : false);
+
+                return (
+                  <div key={habit.id} className="habit-card">
+                    <div className="habit-info">
+                      <div className="habit-icon" style={{ background: `${habit.color}20`, color: habit.color }}>
+                        {isCompleted ? <CheckCircle2 /> : <Activity />}
+                      </div>
+                      <div>
+                        <div className="habit-title">{habit.name}</div>
+                        <div className="habit-desc">
+                          {habit.type === 'MEASUREMENT' ? `Target: ${habit.target} ${habit.unit || ''}` : 'Daily Completion'}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="habit-actions">
+                      <button 
+                        className="btn-icon" 
+                        title="View Details" 
+                        onClick={() => setSelectedHabit(habit)}
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        <Info size={20} />
+                      </button>
+                      
+                      {habit.type === 'YES_NO' ? (
+                        <button
+                          className={`toggle-btn ${entry?.completed ? 'completed' : ''}`}
+                          onClick={() => toggleHabitEntry(habit.id, dateString)}
+                        >
+                          <Check size={18} />
+                        </button>
+                      ) : (
+                        <input
+                          type="number"
+                          className="measurement-input"
+                          placeholder="0"
+                          value={entry?.value || ''}
+                          onChange={(e) => toggleHabitEntry(habit.id, dateString, undefined, parseFloat(e.target.value) || 0)}
+                        />
+                      )}
                     </div>
                   </div>
-                </div>
-
-                <div className="habit-actions">
-                  {habit.type === 'YES_NO' ? (
-                    <button
-                      className={`toggle-btn ${entry?.completed ? 'completed' : ''}`}
-                      onClick={() => toggleHabitEntry(habit.id, dateString)}
-                    >
-                      <Check size={18} />
-                    </button>
-                  ) : (
-                    <input
-                      type="number"
-                      className="measurement-input"
-                      placeholder="0"
-                      value={entry?.value || ''}
-                      onChange={(e) => toggleHabitEntry(habit.id, dateString, undefined, parseFloat(e.target.value) || 0)}
-                    />
-                  )}
-                </div>
-              </div>
-            );
-          })
-        )}
+                );
+              })
+            )}
+          </div>
+        </div>
       </div>
 
       {isModalOpen && (
@@ -193,6 +209,49 @@ function App() {
                 <button type="submit" className="btn-primary">Save Habit</button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {selectedHabit && (
+        <div className="modal-overlay" onClick={() => setSelectedHabit(null)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()}>
+            <div className="header-flex" style={{ marginBottom: '1.5rem' }}>
+              <h2>Habit Details</h2>
+              <button className="btn-icon" onClick={() => setSelectedHabit(null)}><Plus size={24} style={{ transform: 'rotate(45deg)' }} /></button>
+            </div>
+            <div className="form-group">
+              <label>Name</label>
+              <div className="form-input" style={{ background: 'var(--bg-color)' }}>{selectedHabit.name}</div>
+            </div>
+            
+            <div className="form-group">
+              <label>Type</label>
+              <div className="form-input" style={{ background: 'var(--bg-color)' }}>{selectedHabit.type === 'YES_NO' ? 'Yes/No (Completion)' : 'Measurement'}</div>
+            </div>
+
+            {selectedHabit.type === 'MEASUREMENT' && (
+              <div className="form-group">
+                <label>Target</label>
+                <div className="form-input" style={{ background: 'var(--bg-color)' }}>{selectedHabit.target} {selectedHabit.unit || ''}</div>
+              </div>
+            )}
+
+            <div className="form-group">
+              <label>Created On</label>
+              <div className="form-input" style={{ background: 'var(--bg-color)' }}>{format(new Date(selectedHabit.createdAt), 'MMM dd, yyyy')}</div>
+            </div>
+
+            <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+              <button 
+                type="button" 
+                className="btn-primary" 
+                style={{ width: '100%' }}
+                onClick={() => setSelectedHabit(null)}
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}
