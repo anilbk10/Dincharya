@@ -4,7 +4,7 @@ import { Check, Plus, ChevronLeft, ChevronRight, Activity, CalendarDays, CheckCi
 import { useHabits } from './hooks/useHabits';
 import { calculateDailyProductivity } from './utils/productivity';
 import type { HabitType, Habit } from './models/types';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
 function App() {
   const { habits, entries, addHabit, toggleHabitEntry, getEntriesForDate } = useHabits();
@@ -55,16 +55,31 @@ function App() {
     { name: 'Pending', value: habits.length - completedCount }
   ];
 
+  const pieData = [
+    { name: 'Completed', value: completedCount, color: '#4CAF50' },
+    { name: 'Pending', value: habits.length > 0 ? habits.length - completedCount : 1, color: 'rgba(0,0,0,0.1)' }
+  ];
+
+  const weeklyTrendData = Array.from({ length: 7 }).map((_, i) => {
+    const d = subDays(currentDate, 6 - i);
+    const dStr = format(d, 'yyyy-MM-dd');
+    const p = calculateDailyProductivity(habits, entries, dStr);
+    let scoreNum = 0;
+    if (p === 'Productive') scoreNum = 3;
+    else if (p === 'Mid') scoreNum = 2;
+    else if (p === 'Unproductive') scoreNum = 1;
+    return { name: format(d, 'eee'), score: scoreNum };
+  });
+
   return (
     <div className="app-container">
       <header>
-        <h1>Dincharya</h1>
-        <p style={{ color: 'var(--text-secondary)' }}>Master your daily habits</p>
+        <h1>Dincharya Dashboard</h1>
       </header>
 
       <div className="dashboard-grid">
         <div className="dashboard-sidebar">
-          <div className="date-nav glass-panel">
+          <div className="date-nav glass-panel" style={{ padding: '1rem', marginBottom: '0' }}>
             <button className="btn-icon" onClick={handlePrevDay}><ChevronLeft /></button>
             <div style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
               <CalendarDays size={20} /> {displayDate}
@@ -72,31 +87,64 @@ function App() {
             <button className="btn-icon" onClick={handleNextDay}><ChevronRight /></button>
           </div>
 
-          <div className="glass-panel productivity-card">
-            <Activity size={32} style={{ color: 'var(--secondary)' }} />
-            <h3>Daily Productivity Prediction</h3>
-            <div className={`productivity-score score-${productivity.split(' ')[0]}`}>
-              {productivity}
+          <div className="glass-panel" style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <Activity size={24} style={{ color: 'var(--secondary)' }} />
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Productivity</div>
+              <div className={`productivity-score score-${productivity.split(' ')[0]}`}>{productivity}</div>
             </div>
-            <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>Based on your measurements and completions.</p>
-            
-            {habits.length > 0 && (
-              <div className="chart-container">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={chartData}>
-                    <XAxis dataKey="name" stroke="var(--text-secondary)" />
-                    <YAxis stroke="var(--text-secondary)" />
-                    <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{ borderRadius: '12px', background: 'var(--surface-color)', border: 'none' }} />
-                    <Bar dataKey="value" fill="var(--primary)" radius={[8, 8, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            )}
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <TrendingUp size={24} style={{ color: 'var(--primary)' }} />
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Score</div>
+              <div className="productivity-score">{habits.length > 0 ? Math.round((completedCount/habits.length)*100) : 0}%</div>
+            </div>
+          </div>
+          
+          <div className="glass-panel">
+            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem', textAlign: 'center' }}>Weekly Trend</h3>
+            <div className="chart-container" style={{ margin: 0 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weeklyTrendData}>
+                  <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{ borderRadius: '12px', background: 'var(--surface-color)', border: 'none' }} />
+                  <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
         <div className="dashboard-main">
-          <div className="header-flex" style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', height: '160px', marginBottom: '1rem' }}>
+             <div className="glass-panel" style={{ flex: 1, margin: 0, padding: '1rem', display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Completion Distribution</h3>
+                <div style={{ flex: 1 }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie data={pieData} dataKey="value" innerRadius={40} outerRadius={60} stroke="none">
+                        {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                      </Pie>
+                      <Tooltip />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+             </div>
+             <div className="glass-panel" style={{ flex: 1, margin: 0, padding: '1rem', display: 'flex', flexDirection: 'column' }}>
+                <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Progress Bar</h3>
+                <div style={{ flex: 1, marginTop: '1rem' }}>
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={chartData} layout="vertical">
+                      <XAxis type="number" hide />
+                      <YAxis dataKey="name" type="category" width={80} stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
+                      <Tooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px', background: 'var(--surface-color)' }} />
+                      <Bar dataKey="value" fill="var(--primary)" radius={[4, 4, 4, 4]} barSize={20} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+             </div>
+          </div>
+
+          <div className="header-flex" style={{ marginBottom: '1rem' }}>
             <h2>Today's Habits <span style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({completedCount}/{habits.length})</span></h2>
             <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
               <Plus size={18} style={{ marginRight: '6px', verticalAlign: 'middle' }}/> 
