@@ -121,7 +121,7 @@ function App() {
                 <div style={{ flex: 1 }}>
                   <ResponsiveContainer width="100%" height="100%">
                     <PieChart>
-                      <Pie data={pieData} dataKey="value" innerRadius={40} outerRadius={60} stroke="none">
+                      <Pie data={pieData} dataKey="value" innerRadius="60%" outerRadius="90%" stroke="none">
                         {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                       </Pie>
                       <Tooltip />
