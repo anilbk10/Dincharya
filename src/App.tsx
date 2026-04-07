@@ -71,6 +71,38 @@ function App() {
     return { name: format(d, 'eee'), score: scoreNum };
   });
 
+  const calculateDayScore = (dStr: string) => {
+    if (habits.length === 0) return 0;
+    let score = 0;
+    habits.forEach(h => {
+      const e = entries.find(x => x.habitId === h.id && x.date === dStr);
+      if (h.type === 'YES_NO') {
+        if (e?.completed) score += 1;
+      } else {
+        if (e?.value && h.target) score += Math.min(1, e.value / h.target);
+      }
+    });
+    return score / habits.length;
+  };
+
+  const activityData = Array.from({ length: 84 }).map((_, i) => {
+    const d = subDays(currentDate, 83 - i);
+    const dStr = format(d, 'yyyy-MM-dd');
+    const ratio = calculateDayScore(dStr);
+    let level = 0;
+    if (ratio > 0 && ratio < 0.4) level = 1;
+    else if (ratio >= 0.4 && ratio < 0.75) level = 2;
+    else if (ratio >= 0.75) level = 3;
+    return { date: dStr, level, ratio };
+  });
+
+  const getColorForLevel = (level: number) => {
+    if (level === 1) return 'rgba(76, 175, 80, 0.3)';
+    if (level === 2) return 'rgba(76, 175, 80, 0.6)';
+    if (level === 3) return 'rgba(76, 175, 80, 1)';
+    return 'var(--border-color)';
+  };
+
   return (
     <div className="app-container">
       <header>
@@ -208,6 +240,24 @@ function App() {
                 );
               })
             )}
+          </div>
+
+          <div className="glass-panel" style={{ marginTop: '1rem', padding: '1rem' }}>
+            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Activity History</h3>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
+              {activityData.map((d, i) => (
+                <div 
+                  key={i} 
+                  title={`${d.date}: ${Math.round(d.ratio * 100)}% completed`}
+                  style={{ 
+                    width: '14px', 
+                    height: '14px', 
+                    borderRadius: '3px', 
+                    background: getColorForLevel(d.level) 
+                  }} 
+                />
+              ))}
+            </div>
           </div>
         </div>
       </div>
