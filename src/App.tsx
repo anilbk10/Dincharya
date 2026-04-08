@@ -244,19 +244,45 @@ function App() {
 
           <div className="glass-panel" style={{ marginTop: '1rem', padding: '1rem' }}>
             <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Activity History</h3>
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-              {activityData.map((d, i) => (
-                <div 
-                  key={i} 
-                  title={`${d.date}: ${Math.round(d.ratio * 100)}% completed`}
-                  style={{ 
-                    width: '14px', 
-                    height: '14px', 
-                    borderRadius: '3px', 
-                    background: getColorForLevel(d.level) 
-                  }} 
-                />
-              ))}
+            <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: '0.5rem' }}>
+              <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                {Array.from({ length: 12 }).map((_, c) => {
+                  const firstDayOfCol = activityData[c * 7];
+                  const monthName = firstDayOfCol ? format(new Date(firstDayOfCol.date), 'MMM') : '';
+                  const prevFirstDayOfCol = c > 0 ? activityData[(c - 1) * 7] : null;
+                  const prevMonthName = prevFirstDayOfCol ? format(new Date(prevFirstDayOfCol.date), 'MMM') : '';
+                  
+                  return (
+                    <div 
+                      key={c} 
+                      style={{ 
+                        width: '14px', 
+                        flexShrink: 0,
+                        fontSize: '0.70rem', 
+                        color: 'var(--text-secondary)',
+                        overflow: 'visible',
+                        whiteSpace: 'nowrap'
+                      }}
+                    >
+                      {c === 0 || monthName !== prevMonthName ? monthName : ''}
+                    </div>
+                  );
+                })}
+              </div>
+              <div style={{ display: 'grid', gridTemplateRows: 'repeat(7, 14px)', gridAutoFlow: 'column', gap: '4px' }}>
+                {activityData.map((d, i) => (
+                  <div 
+                    key={i} 
+                    title={`${d.date}: ${Math.round(d.ratio * 100)}% completed`}
+                    style={{ 
+                      width: '14px', 
+                      height: '14px', 
+                      borderRadius: '3px', 
+                      background: getColorForLevel(d.level) 
+                    }} 
+                  />
+                ))}
+              </div>
             </div>
           </div>
         </div>
