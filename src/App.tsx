@@ -85,16 +85,23 @@ function App() {
     return score / habits.length;
   };
 
-  const activityData = Array.from({ length: 84 }).map((_, i) => {
-    const d = subDays(currentDate, 83 - i);
+  const todayWeekday = currentDate.getDay(); // 0-6
+  const totalDays = (11 * 7) + (todayWeekday + 1); // Exact days to start on 12 weeks ago Sunday
+
+  const activityData = Array.from({ length: totalDays }).map((_, i) => {
+    const d = subDays(currentDate, totalDays - 1 - i);
     const dStr = format(d, 'yyyy-MM-dd');
     const ratio = calculateDayScore(dStr);
     let level = 0;
     if (ratio > 0 && ratio < 0.4) level = 1;
     else if (ratio >= 0.4 && ratio < 0.75) level = 2;
     else if (ratio >= 0.75) level = 3;
-    return { date: dStr, level, ratio };
+    return { date: dStr, level, ratio, isPadding: false };
   });
+
+  for(let i = todayWeekday + 1; i < 7; i++) {
+    activityData.push({ date: '', level: 0, ratio: 0, isPadding: true });
+  }
 
   const getColorForLevel = (level: number) => {
     if (level === 1) return 'rgba(76, 175, 80, 0.3)';
@@ -244,44 +251,56 @@ function App() {
 
           <div className="glass-panel" style={{ marginTop: '1rem', padding: '1rem' }}>
             <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Activity History</h3>
-            <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: '0.5rem' }}>
-              <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
-                {Array.from({ length: 12 }).map((_, c) => {
-                  const firstDayOfCol = activityData[c * 7];
-                  const monthName = firstDayOfCol ? format(new Date(firstDayOfCol.date), 'MMM') : '';
-                  const prevFirstDayOfCol = c > 0 ? activityData[(c - 1) * 7] : null;
-                  const prevMonthName = prevFirstDayOfCol ? format(new Date(prevFirstDayOfCol.date), 'MMM') : '';
-                  
-                  return (
+            <div style={{ display: 'flex' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', fontSize: '0.65rem', color: 'var(--text-secondary)', paddingTop: '18px', paddingBottom: '8px' }}>
+                <span style={{ opacity: 0 }}>S</span>
+                <span>Mon</span>
+                <span style={{ opacity: 0 }}>T</span>
+                <span>Wed</span>
+                <span style={{ opacity: 0 }}>T</span>
+                <span>Fri</span>
+                <span style={{ opacity: 0 }}>S</span>
+              </div>
+              <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: '0.5rem', flex: 1 }}>
+                <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
+                  {Array.from({ length: 12 }).map((_, c) => {
+                    const firstDayOfCol = activityData[c * 7];
+                    const monthName = firstDayOfCol && !firstDayOfCol.isPadding ? format(new Date(firstDayOfCol.date), 'MMM') : '';
+                    const prevFirstDayOfCol = c > 0 ? activityData[(c - 1) * 7] : null;
+                    const prevMonthName = prevFirstDayOfCol && !prevFirstDayOfCol.isPadding ? format(new Date(prevFirstDayOfCol.date), 'MMM') : '';
+                    
+                    return (
+                      <div 
+                        key={c} 
+                        style={{ 
+                          width: '14px', 
+                          flexShrink: 0,
+                          fontSize: '0.70rem', 
+                          color: 'var(--text-secondary)',
+                          overflow: 'visible',
+                          whiteSpace: 'nowrap'
+                        }}
+                      >
+                        {c === 0 || monthName !== prevMonthName ? monthName : ''}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'grid', gridTemplateRows: 'repeat(7, 14px)', gridAutoFlow: 'column', gap: '4px' }}>
+                  {activityData.map((d, i) => (
                     <div 
-                      key={c} 
+                      key={i} 
+                      title={d.isPadding ? '' : `${d.date}: ${Math.round(d.ratio * 100)}% completed`}
                       style={{ 
                         width: '14px', 
-                        flexShrink: 0,
-                        fontSize: '0.70rem', 
-                        color: 'var(--text-secondary)',
-                        overflow: 'visible',
-                        whiteSpace: 'nowrap'
-                      }}
-                    >
-                      {c === 0 || monthName !== prevMonthName ? monthName : ''}
-                    </div>
-                  );
-                })}
-              </div>
-              <div style={{ display: 'grid', gridTemplateRows: 'repeat(7, 14px)', gridAutoFlow: 'column', gap: '4px' }}>
-                {activityData.map((d, i) => (
-                  <div 
-                    key={i} 
-                    title={`${d.date}: ${Math.round(d.ratio * 100)}% completed`}
-                    style={{ 
-                      width: '14px', 
-                      height: '14px', 
-                      borderRadius: '3px', 
-                      background: getColorForLevel(d.level) 
-                    }} 
-                  />
-                ))}
+                        height: '14px', 
+                        borderRadius: '3px', 
+                        background: d.isPadding ? 'transparent' : getColorForLevel(d.level),
+                        border: d.isPadding ? 'none' : '' 
+                      }} 
+                    />
+                  ))}
+                </div>
               </div>
             </div>
           </div>
