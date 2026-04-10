@@ -250,7 +250,10 @@ function App() {
           </div>
 
           <div className="glass-panel" style={{ marginTop: '1rem', padding: '1rem' }}>
-            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem' }}>Activity History</h3>
+            <div className="header-flex" style={{ marginBottom: '1rem' }}>
+              <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Activity History</h3>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.8 }}>Last 12 Weeks • {format(new Date(), 'yyyy')}</span>
+            </div>
             <div style={{ display: 'flex' }}>
               <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', fontSize: '0.65rem', color: 'var(--text-secondary)', paddingTop: '18px', paddingBottom: '8px' }}>
                 <span style={{ opacity: 0 }}>S</span>
@@ -265,9 +268,9 @@ function App() {
                 <div style={{ display: 'flex', gap: '4px', marginBottom: '4px' }}>
                   {Array.from({ length: 12 }).map((_, c) => {
                     const firstDayOfCol = activityData[c * 7];
-                    const monthName = firstDayOfCol && !firstDayOfCol.isPadding ? format(new Date(firstDayOfCol.date), 'MMM') : '';
+                    const monthName = firstDayOfCol && !firstDayOfCol.isPadding ? format(new Date(firstDayOfCol.date), 'MMM yyyy') : '';
                     const prevFirstDayOfCol = c > 0 ? activityData[(c - 1) * 7] : null;
-                    const prevMonthName = prevFirstDayOfCol && !prevFirstDayOfCol.isPadding ? format(new Date(prevFirstDayOfCol.date), 'MMM') : '';
+                    const prevMonthName = prevFirstDayOfCol && !prevFirstDayOfCol.isPadding ? format(new Date(prevFirstDayOfCol.date), 'MMM yyyy') : '';
                     
                     return (
                       <div 
