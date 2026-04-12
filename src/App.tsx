@@ -157,15 +157,13 @@ function App() {
           <div style={{ display: 'flex', gap: '1rem', height: '160px', marginBottom: '1rem' }}>
              <div className="glass-panel" style={{ flex: 1, margin: 0, padding: '1rem', display: 'flex', flexDirection: 'column' }}>
                 <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Completion Distribution</h3>
-                <div style={{ flex: 1 }}>
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie data={pieData} dataKey="value" innerRadius="60%" outerRadius="90%" stroke="none">
-                        {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
-                      </Pie>
-                      <Tooltip />
-                    </PieChart>
-                  </ResponsiveContainer>
+                <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '0.5rem' }}>
+                  <PieChart width={100} height={100}>
+                    <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={35} outerRadius={50} stroke="none">
+                      {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
                 </div>
              </div>
              <div className="glass-panel" style={{ flex: 1, margin: 0, padding: '1rem', display: 'flex', flexDirection: 'column' }}>
