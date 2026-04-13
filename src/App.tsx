@@ -85,11 +85,12 @@ function App() {
     return score / habits.length;
   };
 
-  const todayWeekday = currentDate.getDay(); // 0-6
+  const systemToday = new Date();
+  const todayWeekday = systemToday.getDay(); // 0-6
   const totalDays = (52 * 7) + (todayWeekday + 1); // Exact days to start on 52 weeks ago Sunday
 
   const activityData = Array.from({ length: totalDays }).map((_, i) => {
-    const d = subDays(currentDate, totalDays - 1 - i);
+    const d = subDays(systemToday, totalDays - 1 - i);
     const dStr = format(d, 'yyyy-MM-dd');
     const ratio = calculateDayScore(dStr);
     let level = 0;
