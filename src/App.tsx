@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { format, subDays, addDays } from 'date-fns';
 import { Check, Plus, ChevronLeft, ChevronRight, Activity, CalendarDays, CheckCircle2, TrendingUp, Info } from 'lucide-react';
 import { useHabits } from './hooks/useHabits';
@@ -11,6 +11,14 @@ function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
+
+  const activityScrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (activityScrollRef.current) {
+      activityScrollRef.current.scrollLeft = activityScrollRef.current.scrollWidth;
+    }
+  });
 
   const dateString = format(currentDate, 'yyyy-MM-dd');
   const displayDate = format(currentDate, 'MMM dd, yyyy');
@@ -263,7 +271,7 @@ function App() {
                 <span>Fri</span>
                 <span style={{ opacity: 0 }}>S</span>
               </div>
-              <div style={{ position: 'relative', overflowX: 'auto', paddingBottom: '0.5rem', flex: 1 }}>
+              <div ref={activityScrollRef} style={{ position: 'relative', overflowX: 'auto', paddingBottom: '0.5rem', flex: 1, scrollBehavior: 'smooth' }}>
                 <div style={{ display: 'flex', gap: '3px', marginBottom: '4px' }}>
                   {Array.from({ length: 53 }).map((_, c) => {
                     const firstDayOfCol = activityData[c * 7];
