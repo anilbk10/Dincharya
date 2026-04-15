@@ -7,7 +7,7 @@ import type { HabitType, Habit } from './models/types';
 import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
 
 function App() {
-  const { habits, entries, addHabit, toggleHabitEntry, getEntriesForDate } = useHabits();
+  const { habits, entries, addHabit, toggleHabitEntry, getEntriesForDate, deleteHabit } = useHabits();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
@@ -117,6 +117,32 @@ function App() {
     if (level === 2) return 'rgba(76, 175, 80, 0.6)';
     if (level === 3) return 'rgba(76, 175, 80, 1)';
     return 'var(--border-color)';
+  };
+
+  const calculateStreak = (habitId: string) => {
+    let streak = 0;
+    for (let i = 0; i < 365; i++) {
+       const dStr = format(subDays(systemToday, i), 'yyyy-MM-dd');
+       const entry = entries.find(e => e.habitId === habitId && e.date === dStr);
+       const h = habits.find(h => h.id === habitId);
+       if (!h) break;
+
+       let isCompleted = false;
+       if (h.type === 'YES_NO') {
+         isCompleted = entry?.completed || false;
+       } else {
+         isCompleted = (entry?.value && h.target) ? entry.value >= h.target : false;
+       }
+
+       if (isCompleted) {
+         streak++;
+       } else {
+         // If it's today, we don't break the active streak if it's incomplete (user might do it later today)
+         if (i === 0) continue; 
+         break;
+       }
+    }
+    return streak;
   };
 
   return (
@@ -391,11 +417,31 @@ function App() {
             )}
 
             <div className="form-group">
+              <label>Current Streak</label>
+              <div className="form-input" style={{ background: 'var(--bg-color)', color: 'var(--primary)', fontWeight: 'bold' }}>
+                🔥 {calculateStreak(selectedHabit.id)} Days
+              </div>
+            </div>
+
+            <div className="form-group">
               <label>Created On</label>
               <div className="form-input" style={{ background: 'var(--bg-color)' }}>{format(new Date(selectedHabit.createdAt), 'MMM dd, yyyy')}</div>
             </div>
 
-            <div style={{ marginTop: '2rem', textAlign: 'center' }}>
+            <div className="header-flex" style={{ marginTop: '2rem' }}>
+              <button 
+                type="button" 
+                className="btn-secondary" 
+                style={{ width: '100%', background: 'rgba(244, 67, 54, 0.1)', color: '#F44336', border: '1px solid rgba(244, 67, 54, 0.3)', marginRight: '1rem' }}
+                onClick={() => {
+                  if (window.confirm('Are you certain you want to delete this habit and all its history?')) {
+                    deleteHabit(selectedHabit.id);
+                    setSelectedHabit(null);
+                  }
+                }}
+              >
+                Delete Habit
+              </button>
               <button 
                 type="button" 
                 className="btn-primary" 
