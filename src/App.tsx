@@ -11,6 +11,9 @@ function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
+  const systemTodayDate = new Date();
+  const currentYearNumber = systemTodayDate.getFullYear();
+  const [selectedActivityYear, setSelectedActivityYear] = useState<number>(currentYearNumber);
 
   const activityScrollRef = useRef<HTMLDivElement>(null);
 
@@ -94,11 +97,17 @@ function App() {
   };
 
   const systemToday = new Date();
-  const todayWeekday = systemToday.getDay(); // 0-6
-  const totalDays = (52 * 7) + (todayWeekday + 1); // Exact days to start on 52 weeks ago Sunday
+  
+  let activityEndDate = systemToday;
+  if (selectedActivityYear !== currentYearNumber) {
+    activityEndDate = new Date(selectedActivityYear, 11, 31); // Dec 31
+  }
+
+  const endWeekday = activityEndDate.getDay(); // 0-6
+  const totalDays = (52 * 7) + (endWeekday + 1); // Exact days to start on 52 weeks ago Sunday
 
   const activityData = Array.from({ length: totalDays }).map((_, i) => {
-    const d = subDays(systemToday, totalDays - 1 - i);
+    const d = subDays(activityEndDate, totalDays - 1 - i);
     const dStr = format(d, 'yyyy-MM-dd');
     const ratio = calculateDayScore(dStr);
     let level = 0;
@@ -108,7 +117,7 @@ function App() {
     return { date: dStr, level, ratio, isPadding: false };
   });
 
-  for(let i = todayWeekday + 1; i < 7; i++) {
+  for(let i = endWeekday + 1; i < 7; i++) {
     activityData.push({ date: '', level: 0, ratio: 0, isPadding: true });
   }
 
@@ -284,8 +293,20 @@ function App() {
 
           <div className="glass-panel" style={{ marginTop: '1rem', padding: '1rem' }}>
             <div className="header-flex" style={{ marginBottom: '1rem' }}>
-              <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Activity History (Last Year)</h3>
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.8 }}>365 Days • {format(new Date(), 'yyyy')}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Activity</h3>
+                <select 
+                  value={selectedActivityYear} 
+                  onChange={e => setSelectedActivityYear(parseInt(e.target.value))}
+                  style={{ background: 'var(--bg-color)', color: 'var(--primary)', border: '1px solid var(--border-color)', borderRadius: '4px', fontSize: '0.8rem', outline: 'none', cursor: 'pointer', padding: '2px 4px' }}
+                >
+                  <option value={currentYearNumber}>{currentYearNumber}</option>
+                  <option value={currentYearNumber - 1}>{currentYearNumber - 1}</option>
+                  <option value={currentYearNumber - 2}>{currentYearNumber - 2}</option>
+                  <option value={currentYearNumber - 3}>{currentYearNumber - 3}</option>
+                </select>
+              </div>
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.8 }}>365 Days</span>
             </div>
             <div style={{ display: 'flex' }}>
               <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-between', paddingRight: '8px', fontSize: '0.65rem', color: 'var(--text-secondary)', paddingTop: '18px', paddingBottom: '8px' }}>
