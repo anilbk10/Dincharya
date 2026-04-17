@@ -198,7 +198,7 @@ function App() {
         </div>
 
         <div className="dashboard-main">
-          <div style={{ display: 'flex', gap: '1rem', height: '160px', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', gap: '1rem', height: '160px', marginBottom: '1rem', flexShrink: 0 }}>
              <div className="glass-panel" style={{ flex: 1, margin: 0, padding: '1rem', display: 'flex', flexDirection: 'column' }}>
                 <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Completion Distribution</h3>
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '0.5rem' }}>
@@ -225,7 +225,7 @@ function App() {
              </div>
           </div>
 
-          <div className="header-flex" style={{ marginBottom: '1rem' }}>
+          <div className="header-flex" style={{ marginBottom: '1rem', flexShrink: 0 }}>
             <h2>Today's Habits <span style={{ fontSize: '1rem', color: 'var(--text-secondary)', fontWeight: 400 }}>({completedCount}/{habits.length})</span></h2>
             <button className="btn-primary" onClick={() => setIsModalOpen(true)}>
               <Plus size={18} style={{ marginRight: '6px', verticalAlign: 'middle' }}/> 
@@ -291,7 +291,7 @@ function App() {
             )}
           </div>
 
-          <div className="glass-panel" style={{ marginTop: '1rem', padding: '1rem' }}>
+          <div className="glass-panel" style={{ marginTop: '1rem', padding: '1rem', flexShrink: 0 }}>
             <div className="header-flex" style={{ marginBottom: '1rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Activity</h3>
