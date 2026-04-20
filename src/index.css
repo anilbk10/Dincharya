@@ -49,10 +49,9 @@ body {
   max-width: 1400px;
   margin: 0 auto;
   padding: 1rem;
-  height: 100vh;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  overflow: hidden;
 }
 
 .dashboard-grid {
@@ -74,7 +73,6 @@ body {
 .dashboard-main {
   display: flex;
   flex-direction: column;
-  overflow: hidden;
   background: var(--surface-color);
   backdrop-filter: var(--glass-blur);
   border-radius: 12px;
@@ -249,9 +247,8 @@ input.measurement-input {
 }
 
 .habit-list {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
   padding-right: 4px;
 }
 
