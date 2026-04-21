@@ -198,19 +198,19 @@ function App() {
         </div>
 
         <div className="dashboard-main">
-          <div style={{ display: 'flex', gap: '0.75rem', height: '110px', marginBottom: '0.5rem', flexShrink: 0 }}>
-             <div className="glass-panel" style={{ flex: 1, margin: 0, padding: '1rem', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', height: '140px', marginBottom: '0.5rem', flexShrink: 0 }}>
+             <div className="glass-panel" style={{ flex: 1, margin: 0, padding: '0.75rem', display: 'flex', flexDirection: 'column' }}>
                 <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Completion Distribution</h3>
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', marginTop: '0.5rem' }}>
-                  <PieChart width={100} height={100}>
-                    <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={35} outerRadius={50} stroke="none">
+                  <PieChart width={90} height={90}>
+                    <Pie data={pieData} dataKey="value" cx="50%" cy="50%" innerRadius={30} outerRadius={45} stroke="none">
                       {pieData.map((entry, index) => <Cell key={`cell-${index}`} fill={entry.color} />)}
                     </Pie>
                     <Tooltip />
                   </PieChart>
                 </div>
              </div>
-             <div className="glass-panel" style={{ flex: 1, margin: 0, padding: '1rem', display: 'flex', flexDirection: 'column' }}>
+             <div className="glass-panel" style={{ flex: 1, margin: 0, padding: '0.75rem', display: 'flex', flexDirection: 'column' }}>
                 <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>Progress Bar</h3>
                 <div style={{ flex: 1, marginTop: '1rem' }}>
                   <ResponsiveContainer width="100%" height="100%">
