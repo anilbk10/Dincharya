@@ -157,7 +157,7 @@ function App() {
   return (
     <div className="app-container">
       <header>
-        <h1>Dincharya Dashboard</h1>
+        <h1>Dincharya</h1>
       </header>
 
       <div className="dashboard-grid">
@@ -188,7 +188,7 @@ function App() {
             <div className="chart-container" style={{ margin: 0 }}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={weeklyTrendData}>
-                  <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
+                  <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} interval={0} />
                   <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{ borderRadius: '12px', background: 'var(--surface-color)', border: 'none' }} />
                   <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                 </LineChart>
