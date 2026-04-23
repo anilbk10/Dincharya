@@ -161,42 +161,6 @@ function App() {
       </header>
 
       <div className="dashboard-grid">
-        <div className="dashboard-sidebar">
-          <div className="date-nav glass-panel" style={{ padding: '1rem', marginBottom: '0' }}>
-            <button className="btn-icon" onClick={handlePrevDay}><ChevronLeft /></button>
-            <div style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <CalendarDays size={20} /> {displayDate}
-            </div>
-            <button className="btn-icon" onClick={handleNextDay}><ChevronRight /></button>
-          </div>
-
-          <div className="glass-panel" style={{ display: 'flex', gap: '1rem' }}>
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <Activity size={24} style={{ color: 'var(--secondary)' }} />
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Productivity</div>
-              <div className={`productivity-score score-${productivity.split(' ')[0]}`}>{productivity}</div>
-            </div>
-            <div style={{ flex: 1, textAlign: 'center' }}>
-              <TrendingUp size={24} style={{ color: 'var(--primary)' }} />
-              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Score</div>
-              <div className="productivity-score">{habits.length > 0 ? Math.round((completedCount/habits.length)*100) : 0}%</div>
-            </div>
-          </div>
-          
-          <div className="glass-panel">
-            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem', textAlign: 'center' }}>Weekly Trend</h3>
-            <div className="chart-container" style={{ margin: 0 }}>
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={weeklyTrendData}>
-                  <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} interval={0} />
-                  <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{ borderRadius: '12px', background: 'var(--surface-color)', border: 'none' }} />
-                  <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </div>
-          </div>
-        </div>
-
         <div className="dashboard-main">
           <div style={{ display: 'flex', gap: '0.75rem', height: '140px', marginBottom: '0.5rem', flexShrink: 0 }}>
              <div className="glass-panel" style={{ flex: 1, margin: 0, padding: '0.75rem', display: 'flex', flexDirection: 'column' }}>
@@ -359,6 +323,42 @@ function App() {
                   ))}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="dashboard-sidebar">
+          <div className="date-nav glass-panel" style={{ padding: '1rem', marginBottom: '0' }}>
+            <button className="btn-icon" onClick={handlePrevDay}><ChevronLeft /></button>
+            <div style={{ fontSize: '1.25rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <CalendarDays size={20} /> {displayDate}
+            </div>
+            <button className="btn-icon" onClick={handleNextDay}><ChevronRight /></button>
+          </div>
+
+          <div className="glass-panel" style={{ display: 'flex', gap: '1rem' }}>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <Activity size={24} style={{ color: 'var(--secondary)' }} />
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Productivity</div>
+              <div className={`productivity-score score-${productivity.split(' ')[0]}`}>{productivity}</div>
+            </div>
+            <div style={{ flex: 1, textAlign: 'center' }}>
+              <TrendingUp size={24} style={{ color: 'var(--primary)' }} />
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginTop: '0.5rem' }}>Score</div>
+              <div className="productivity-score">{habits.length > 0 ? Math.round((completedCount/habits.length)*100) : 0}%</div>
+            </div>
+          </div>
+          
+          <div className="glass-panel">
+            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '1rem', textAlign: 'center' }}>Weekly Trend</h3>
+            <div className="chart-container" style={{ margin: 0 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={weeklyTrendData}>
+                  <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} interval={0} />
+                  <Tooltip cursor={{fill: 'rgba(0,0,0,0.05)'}} contentStyle={{ borderRadius: '12px', background: 'var(--surface-color)', border: 'none' }} />
+                  <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
           </div>
         </div>
