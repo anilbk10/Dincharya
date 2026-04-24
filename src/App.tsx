@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { format, subDays, addDays } from 'date-fns';
-import { Check, Plus, ChevronLeft, ChevronRight, Activity, CalendarDays, CheckCircle2, TrendingUp, Info } from 'lucide-react';
+import { Check, Plus, ChevronLeft, ChevronRight, Activity, CalendarDays, CheckCircle2, TrendingUp, Info, Timer, Play, Pause, Square } from 'lucide-react';
 import { useHabits } from './hooks/useHabits';
 import { calculateDailyProductivity } from './utils/productivity';
 import type { HabitType, Habit } from './models/types';
@@ -15,6 +15,12 @@ function App() {
   const currentYearNumber = systemTodayDate.getFullYear();
   const [selectedActivityYear, setSelectedActivityYear] = useState<number>(currentYearNumber);
 
+  // Timer state
+  const [timerHabitId, setTimerHabitId] = useState<string | null>(null);
+  const [timerSeconds, setTimerSeconds] = useState(0);
+  const [timerRunning, setTimerRunning] = useState(false);
+  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
   const activityScrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -22,6 +28,49 @@ function App() {
       activityScrollRef.current.scrollLeft = activityScrollRef.current.scrollWidth;
     }
   });
+
+  // Timer interval
+  useEffect(() => {
+    if (timerRunning) {
+      timerRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000);
+    } else {
+      if (timerRef.current) clearInterval(timerRef.current);
+    }
+    return () => { if (timerRef.current) clearInterval(timerRef.current); };
+  }, [timerRunning]);
+
+  const startTimer = (habitId: string) => {
+    // if switching habit, reset
+    if (timerHabitId !== habitId) {
+      setTimerSeconds(0);
+    }
+    setTimerHabitId(habitId);
+    setTimerRunning(true);
+  };
+
+  const stopAndSaveTimer = () => {
+    setTimerRunning(false);
+    if (timerHabitId && timerSeconds > 0) {
+      const habit = habits.find(h => h.id === timerHabitId);
+      const existingEntry = todayEntries.find(e => e.habitId === timerHabitId);
+      const prevValue = existingEntry?.value || 0;
+      // Add elapsed hours (rounded to 2 decimal places)
+      const newValue = Math.round((prevValue + timerSeconds / 3600) * 100) / 100;
+      toggleHabitEntry(timerHabitId, dateString, undefined, newValue);
+      if (habit) window.alert(`✅ Added ${(timerSeconds / 60).toFixed(1)} min to "${habit.name}" → Total: ${newValue.toFixed(2)} hrs`);
+    }
+    setTimerHabitId(null);
+    setTimerSeconds(0);
+  };
+
+  const formatTimer = (secs: number) => {
+    const h = Math.floor(secs / 3600);
+    const m = Math.floor((secs % 3600) / 60);
+    const s = secs % 60;
+    return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+  };
+
+  const timerHabit = habits.find(h => h.id === timerHabitId);
 
   const dateString = format(currentDate, 'yyyy-MM-dd');
   const displayDate = format(currentDate, 'MMM dd, yyyy');
@@ -240,13 +289,40 @@ function App() {
                           <Check size={18} />
                         </button>
                       ) : (
-                        <input
-                          type="number"
-                          className="measurement-input"
-                          placeholder="0"
-                          value={entry?.value || ''}
-                          onChange={(e) => toggleHabitEntry(habit.id, dateString, undefined, parseFloat(e.target.value) || 0)}
-                        />
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <input
+                            type="number"
+                            className="measurement-input"
+                            placeholder="0"
+                            value={entry?.value || ''}
+                            onChange={(e) => toggleHabitEntry(habit.id, dateString, undefined, parseFloat(e.target.value) || 0)}
+                          />
+                          <button
+                            title="Start Timer"
+                            onClick={() => {
+                              if (timerHabitId === habit.id && timerRunning) {
+                                setTimerRunning(false);
+                              } else {
+                                startTimer(habit.id);
+                              }
+                            }}
+                            style={{
+                              width: '32px', height: '32px', borderRadius: '50%',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              background: timerHabitId === habit.id && timerRunning
+                                ? 'rgba(255,152,0,0.2)' : 'rgba(76,175,80,0.15)',
+                              color: timerHabitId === habit.id && timerRunning
+                                ? '#FF9800' : 'var(--primary)',
+                              border: '1px solid currentColor',
+                              cursor: 'pointer',
+                              flexShrink: 0,
+                            }}
+                          >
+                            {timerHabitId === habit.id && timerRunning
+                              ? <Pause size={14} />
+                              : <Timer size={14} />}
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
@@ -362,9 +438,65 @@ function App() {
             </div>
           </div>
         </div>
-      </div>
 
-      {isModalOpen && (
+      {/* Floating Timer Panel */}
+      {timerHabitId && (
+        <div style={{
+          position: 'fixed', bottom: '2rem', right: '2rem',
+          background: 'var(--surface-color)', backdropFilter: 'blur(20px)',
+          border: '1px solid var(--border-color)', borderRadius: '16px',
+          padding: '1.25rem 1.5rem', boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
+          minWidth: '260px', zIndex: 999,
+          display: 'flex', flexDirection: 'column', gap: '0.75rem',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+            <Timer size={16} style={{ color: 'var(--primary)' }} />
+            <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>TIMER</span>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.7, marginLeft: 'auto', maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+              {timerHabit?.name}
+            </span>
+          </div>
+
+          <div style={{ fontFamily: 'monospace', fontSize: '2rem', fontWeight: 700, textAlign: 'center',
+            color: timerRunning ? 'var(--primary)' : 'var(--text-secondary)',
+            letterSpacing: '0.1em',
+          }}>
+            {formatTimer(timerSeconds)}
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button
+              onClick={() => setTimerRunning(r => !r)}
+              style={{
+                flex: 1, padding: '0.6rem', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                background: timerRunning ? 'rgba(255,152,0,0.15)' : 'rgba(76,175,80,0.15)',
+                color: timerRunning ? '#FF9800' : 'var(--primary)',
+                fontWeight: 600, fontSize: '0.85rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+              }}
+            >
+              {timerRunning ? <><Pause size={14}/> Pause</> : <><Play size={14}/> Resume</>}
+            </button>
+            <button
+              onClick={stopAndSaveTimer}
+              style={{
+                flex: 1, padding: '0.6rem', borderRadius: '10px', border: 'none', cursor: 'pointer',
+                background: 'rgba(244,67,54,0.12)', color: '#F44336',
+                fontWeight: 600, fontSize: '0.85rem',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+              }}
+            >
+              <Square size={14}/> Save
+            </button>
+          </div>
+
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.6, textAlign: 'center' }}>
+            {(timerSeconds / 3600).toFixed(3)} hrs will be added on Save
+          </div>
+        </div>
+      )}
+
+
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <h2 style={{ marginBottom: '1.5rem' }}>Create New Habit</h2>
