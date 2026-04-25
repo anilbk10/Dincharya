@@ -438,6 +438,7 @@ function App() {
             </div>
           </div>
         </div>
+      </div>
 
       {/* Floating Timer Panel */}
       {timerHabitId && (
@@ -496,7 +497,7 @@ function App() {
         </div>
       )}
 
-
+      {isModalOpen && (
         <div className="modal-overlay" onClick={() => setIsModalOpen(false)}>
           <div className="modal-content" onClick={e => e.stopPropagation()}>
             <h2 style={{ marginBottom: '1.5rem' }}>Create New Habit</h2>
