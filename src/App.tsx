@@ -20,6 +20,10 @@ function App() {
   const [timerSeconds, setTimerSeconds] = useState(0);
   const [timerRunning, setTimerRunning] = useState(false);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Refs always hold the LATEST values — prevents stale closure in stopAndSaveTimer
+  const timerSecondsRef = useRef(0);
+  const timerHabitIdRef = useRef<string | null>(null);
+  const timerDateRef = useRef<string>('');
 
   const activityScrollRef = useRef<HTMLDivElement>(null);
 
@@ -32,7 +36,10 @@ function App() {
   // Timer interval
   useEffect(() => {
     if (timerRunning) {
-      timerRef.current = setInterval(() => setTimerSeconds(s => s + 1), 1000);
+      timerRef.current = setInterval(() => {
+        timerSecondsRef.current += 1;
+        setTimerSeconds(timerSecondsRef.current);
+      }, 1000);
     } else {
       if (timerRef.current) clearInterval(timerRef.current);
     }
@@ -40,25 +47,39 @@ function App() {
   }, [timerRunning]);
 
   const startTimer = (habitId: string) => {
-    // if switching habit, reset
-    if (timerHabitId !== habitId) {
+    if (timerHabitIdRef.current !== habitId) {
+      timerSecondsRef.current = 0;
       setTimerSeconds(0);
     }
+    timerHabitIdRef.current = habitId;
+    timerDateRef.current = format(currentDate, 'yyyy-MM-dd');
     setTimerHabitId(habitId);
     setTimerRunning(true);
   };
 
   const stopAndSaveTimer = () => {
     setTimerRunning(false);
-    if (timerHabitId && timerSeconds > 0) {
-      const habit = habits.find(h => h.id === timerHabitId);
-      const existingEntry = todayEntries.find(e => e.habitId === timerHabitId);
+    if (timerRef.current) clearInterval(timerRef.current);
+
+    const savedHabitId = timerHabitIdRef.current;
+    const savedSeconds = timerSecondsRef.current;
+    const savedDate = timerDateRef.current;
+
+    if (savedHabitId && savedSeconds > 0) {
+      const habit = habits.find(h => h.id === savedHabitId);
+      // Read existing entry synchronously from entries state
+      const existingEntry = entries.find(e => e.habitId === savedHabitId && e.date === savedDate);
       const prevValue = existingEntry?.value || 0;
-      // Add elapsed hours (rounded to 2 decimal places)
-      const newValue = Math.round((prevValue + timerSeconds / 3600) * 100) / 100;
-      toggleHabitEntry(timerHabitId, dateString, undefined, newValue);
-      if (habit) window.alert(`✅ Added ${(timerSeconds / 60).toFixed(1)} min to "${habit.name}" → Total: ${newValue.toFixed(2)} hrs`);
+      const addedHours = savedSeconds / 3600;
+      const newValue = Math.round((prevValue + addedHours) * 100) / 100;
+      toggleHabitEntry(savedHabitId, savedDate, undefined, newValue);
+      if (habit) window.alert(`✅ Added ${(savedSeconds / 60).toFixed(1)} min to "${habit.name}" → Total: ${newValue.toFixed(2)} hrs`);
     }
+
+    // Reset refs and state
+    timerHabitIdRef.current = null;
+    timerSecondsRef.current = 0;
+    timerDateRef.current = '';
     setTimerHabitId(null);
     setTimerSeconds(0);
   };
