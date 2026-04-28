@@ -91,7 +91,17 @@ function App() {
     return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
   };
 
+  const formatHoursMinutes = (decimalHours: number) => {
+    const totalMins = Math.round(decimalHours * 60);
+    const h = Math.floor(totalMins / 60);
+    const m = totalMins % 60;
+    if (h > 0 && m > 0) return `${h}h ${m}m`;
+    if (h > 0) return `${h}h`;
+    return `${m}m`;
+  };
+
   const timerHabit = habits.find(h => h.id === timerHabitId);
+
 
   const dateString = format(currentDate, 'yyyy-MM-dd');
   const displayDate = format(currentDate, 'MMM dd, yyyy');
