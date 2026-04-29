@@ -47,10 +47,9 @@ function App() {
   }, [timerRunning]);
 
   const startTimer = (habitId: string) => {
-    if (timerHabitIdRef.current !== habitId) {
-      timerSecondsRef.current = 0;
-      setTimerSeconds(0);
-    }
+    // Always start fresh from 0 for each new session
+    timerSecondsRef.current = 0;
+    setTimerSeconds(0);
     timerHabitIdRef.current = habitId;
     timerDateRef.current = format(currentDate, 'yyyy-MM-dd');
     setTimerHabitId(habitId);
