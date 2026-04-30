@@ -320,23 +320,13 @@ function App() {
                         </button>
                       ) : (
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          {entry?.value ? (
-                            <span style={{
+                          <span style={{
                               fontSize: '0.85rem', fontWeight: 700,
-                              color: 'var(--primary)', minWidth: '52px',
-                              textAlign: 'right',
+                              color: entry?.value ? 'var(--primary)' : 'var(--text-secondary)',
+                              minWidth: '52px', textAlign: 'right',
                             }}>
-                              {formatHoursMinutes(entry.value)}
+                              {formatHoursMinutes(entry?.value || 0)}
                             </span>
-                          ) : (
-                            <input
-                              type="number"
-                              className="measurement-input"
-                              placeholder="0"
-                              value={''}
-                              onChange={(e) => toggleHabitEntry(habit.id, dateString, undefined, parseFloat(e.target.value) || 0)}
-                            />
-                          )}
                           <button
                             title="Start Timer"
                             onClick={() => {
