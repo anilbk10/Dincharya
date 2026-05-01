@@ -27,6 +27,31 @@ function App() {
 
   const activityScrollRef = useRef<HTMLDivElement>(null);
 
+  // Draggable timer
+  const [timerPos, setTimerPos] = useState({ right: 32, bottom: 32 });
+  const dragStartRef = useRef<{ mouseX: number; mouseY: number; right: number; bottom: number } | null>(null);
+
+  const onTimerDragStart = (e: React.MouseEvent) => {
+    e.preventDefault();
+    dragStartRef.current = { mouseX: e.clientX, mouseY: e.clientY, right: timerPos.right, bottom: timerPos.bottom };
+    const onMove = (ev: MouseEvent) => {
+      if (!dragStartRef.current) return;
+      const dx = ev.clientX - dragStartRef.current.mouseX;
+      const dy = ev.clientY - dragStartRef.current.mouseY;
+      setTimerPos({
+        right: Math.max(0, dragStartRef.current.right - dx),
+        bottom: Math.max(0, dragStartRef.current.bottom - dy),
+      });
+    };
+    const onUp = () => {
+      dragStartRef.current = null;
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('mouseup', onUp);
+    };
+    window.addEventListener('mousemove', onMove);
+    window.addEventListener('mouseup', onUp);
+  };
+
   useEffect(() => {
     if (activityScrollRef.current) {
       activityScrollRef.current.scrollLeft = activityScrollRef.current.scrollWidth;
@@ -473,14 +498,20 @@ function App() {
       {/* Floating Timer Panel */}
       {timerHabitId && (
         <div style={{
-          position: 'fixed', bottom: '2rem', right: '2rem',
+          position: 'fixed',
+          bottom: timerPos.bottom,
+          right: timerPos.right,
           background: 'var(--surface-color)', backdropFilter: 'blur(20px)',
           border: '1px solid var(--border-color)', borderRadius: '16px',
           padding: '1.25rem 1.5rem', boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
           minWidth: '260px', zIndex: 999,
           display: 'flex', flexDirection: 'column', gap: '0.75rem',
+          userSelect: 'none',
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem' }}>
+          <div
+            onMouseDown={onTimerDragStart}
+            style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.25rem', cursor: 'grab' }}
+          >
             <Timer size={16} style={{ color: 'var(--primary)' }} />
             <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>TIMER</span>
             <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.7, marginLeft: 'auto', maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
