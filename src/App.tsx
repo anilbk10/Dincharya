@@ -327,15 +327,6 @@ function App() {
                     </div>
 
                     <div className="habit-actions">
-                      <button 
-                        className="btn-icon" 
-                        title="View Details" 
-                        onClick={() => setSelectedHabit(habit)}
-                        style={{ color: 'var(--text-secondary)' }}
-                      >
-                        <Info size={20} />
-                      </button>
-                      
                       {habit.type === 'YES_NO' ? (
                         <button
                           className={`toggle-btn ${entry?.completed ? 'completed' : ''}`}
@@ -379,6 +370,14 @@ function App() {
                           </button>
                         </div>
                       )}
+                      <button
+                        className="btn-icon"
+                        title="View Details"
+                        onClick={() => setSelectedHabit(habit)}
+                        style={{ color: 'var(--text-secondary)' }}
+                      >
+                        <Info size={20} />
+                      </button>
                     </div>
                   </div>
                 );
