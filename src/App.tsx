@@ -578,7 +578,7 @@ function App() {
             <div style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.3em', textTransform: 'uppercase', fontWeight: 600 }}>
               {timerHabit?.name}
             </div>
-            <div style={{ fontFamily: 'monospace', fontSize: 'clamp(4rem, 12vw, 8rem)', fontWeight: 800, color: '#fff', letterSpacing: '0.05em', textShadow: '0 0 60px rgba(139,92,246,0.9), 0 0 20px rgba(99,102,241,0.6)' }}>
+            <div style={{ fontFamily: 'monospace', fontSize: 'clamp(4rem, 12vw, 8rem)', fontWeight: 800, color: '#fff', letterSpacing: '0.05em' }}>
               {formatTimer(timerSeconds)}
             </div>
             <div style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.5)' }}>
