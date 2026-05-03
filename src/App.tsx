@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { format, subDays, addDays } from 'date-fns';
-import { Check, Plus, ChevronLeft, ChevronRight, Activity, CalendarDays, CheckCircle2, TrendingUp, Info, Timer, Play, Pause, Square } from 'lucide-react';
+import { Check, Plus, ChevronLeft, ChevronRight, Activity, CalendarDays, CheckCircle2, TrendingUp, Info, Timer, Play, Pause, Square, Maximize2, Minimize2 } from 'lucide-react';
 import { useHabits } from './hooks/useHabits';
 import { calculateDailyProductivity } from './utils/productivity';
 import type { HabitType, Habit } from './models/types';
@@ -29,6 +29,7 @@ function App() {
 
   // Draggable timer
   const [timerPos, setTimerPos] = useState({ right: 32, bottom: 32 });
+  const [isTimerExpanded, setIsTimerExpanded] = useState(false);
   const dragStartRef = useRef<{ mouseX: number; mouseY: number; right: number; bottom: number } | null>(null);
 
   const onTimerDragStart = (e: React.MouseEvent) => {
@@ -513,9 +514,17 @@ function App() {
           >
             <Timer size={16} style={{ color: 'var(--primary)' }} />
             <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)', fontWeight: 600 }}>TIMER</span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.7, marginLeft: 'auto', maxWidth: '130px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <span style={{ fontSize: '0.75rem', color: 'var(--text-secondary)', opacity: 0.7, marginLeft: 'auto', maxWidth: '100px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
               {timerHabit?.name}
             </span>
+            <button
+              onMouseDown={e => e.stopPropagation()}
+              onClick={() => setIsTimerExpanded(v => !v)}
+              title="Focus Mode"
+              style={{ marginLeft: '4px', background: 'none', border: 'none', cursor: 'pointer', color: 'var(--primary)', display: 'flex', padding: '2px' }}
+            >
+              <Maximize2 size={14} />
+            </button>
           </div>
 
           <div style={{ fontFamily: 'monospace', fontSize: '2rem', fontWeight: 700, textAlign: 'center',
@@ -553,6 +562,57 @@ function App() {
 
           <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', opacity: 0.6, textAlign: 'center' }}>
             {(timerSeconds / 3600).toFixed(3)} hrs will be added on Save
+          </div>
+        </div>
+      )}
+
+      {/* Full-screen Focus Mode */}
+      {timerHabitId && isTimerExpanded && (
+        <div className="focus-overlay">
+          <div className="focus-waves">
+            <div className="wave wave1" />
+            <div className="wave wave2" />
+            <div className="wave wave3" />
+          </div>
+          <div style={{ position: 'relative', zIndex: 2, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '2rem' }}>
+            <div style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.6)', letterSpacing: '0.3em', textTransform: 'uppercase', fontWeight: 600 }}>
+              {timerHabit?.name}
+            </div>
+            <div style={{ fontFamily: 'monospace', fontSize: 'clamp(4rem, 12vw, 8rem)', fontWeight: 800, color: '#fff', letterSpacing: '0.05em', textShadow: '0 0 40px rgba(76,175,80,0.8)' }}>
+              {formatTimer(timerSeconds)}
+            </div>
+            <div style={{ fontSize: '1rem', color: 'rgba(255,255,255,0.5)' }}>
+              {(timerSeconds / 3600).toFixed(3)} hrs this session
+            </div>
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+              <button
+                onClick={() => setTimerRunning(r => !r)}
+                style={{
+                  padding: '1rem 2.5rem', borderRadius: '50px', border: '2px solid rgba(255,255,255,0.3)',
+                  background: timerRunning ? 'rgba(255,152,0,0.2)' : 'rgba(76,175,80,0.2)',
+                  color: '#fff', fontWeight: 700, fontSize: '1.1rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem', backdropFilter: 'blur(10px)',
+                }}
+              >
+                {timerRunning ? <><Pause size={20}/> Pause</> : <><Play size={20}/> Resume</>}
+              </button>
+              <button
+                onClick={() => { stopAndSaveTimer(); setIsTimerExpanded(false); }}
+                style={{
+                  padding: '1rem 2.5rem', borderRadius: '50px', border: '2px solid rgba(244,67,54,0.5)',
+                  background: 'rgba(244,67,54,0.2)', color: '#fff', fontWeight: 700, fontSize: '1.1rem', cursor: 'pointer',
+                  display: 'flex', alignItems: 'center', gap: '0.5rem', backdropFilter: 'blur(10px)',
+                }}
+              >
+                <Square size={20}/> Save & Exit
+              </button>
+            </div>
+            <button
+              onClick={() => setIsTimerExpanded(false)}
+              style={{ marginTop: '1rem', background: 'none', border: 'none', color: 'rgba(255,255,255,0.4)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.9rem' }}
+            >
+              <Minimize2 size={16} /> Collapse
+            </button>
           </div>
         </div>
       )}
