@@ -201,6 +201,27 @@ function App() {
     return score / habits.length;
   };
 
+  // Monthly consistency: last 12 months, average daily completion %
+  const monthlyReviewData = Array.from({ length: 12 }).map((_, i) => {
+    const monthDate = new Date(systemTodayDate.getFullYear(), systemTodayDate.getMonth() - (11 - i), 1);
+    const year = monthDate.getFullYear();
+    const month = monthDate.getMonth();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
+    let totalScore = 0;
+    let countedDays = 0;
+    for (let d = 1; d <= daysInMonth; d++) {
+      const dStr = format(new Date(year, month, d), 'yyyy-MM-dd');
+      if (dStr > format(systemTodayDate, 'yyyy-MM-dd')) break;
+      if (habits.length > 0) {
+        totalScore += calculateDayScore(dStr);
+        countedDays++;
+      }
+    }
+    const avg = countedDays > 0 ? Math.round((totalScore / countedDays) * 100) : 0;
+    return { name: format(monthDate, 'MMM'), pct: avg };
+  });
+
+
   const systemToday = new Date();
   
   let activityEndDate = systemToday;
@@ -490,6 +511,42 @@ function App() {
                   <Line type="monotone" dataKey="score" stroke="var(--primary)" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} />
                 </LineChart>
               </ResponsiveContainer>
+            </div>
+          </div>
+
+          <div className="glass-panel">
+            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.2rem', textAlign: 'center' }}>Monthly Review</h3>
+            <p style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', opacity: 0.55, textAlign: 'center', marginBottom: '0.75rem', margin: '0 0 0.75rem' }}>Avg daily completion % — last 12 months</p>
+            <div style={{ height: '140px' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyReviewData} barSize={12}>
+                  <XAxis dataKey="name" stroke="var(--text-secondary)" fontSize={9} tickLine={false} axisLine={false} interval={0} />
+                  <YAxis domain={[0, 100]} hide />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                    contentStyle={{ borderRadius: '8px', background: 'var(--surface-color)', border: 'none', fontSize: '0.75rem' }}
+                    formatter={(val: unknown) => [`${val}%`, 'Completion']}
+                  />
+                  <Bar dataKey="pct" radius={[4, 4, 0, 0]}>
+                    {monthlyReviewData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          entry.pct >= 70 ? 'var(--primary)' :
+                          entry.pct >= 40 ? '#FF9800' :
+                          entry.pct > 0  ? '#F44336' :
+                          'rgba(255,255,255,0.08)'
+                        }
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div style={{ display: 'flex', gap: '0.6rem', justifyContent: 'center', marginTop: '0.5rem', fontSize: '0.62rem', color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
+              <span>🟢 ≥70% Consistent</span>
+              <span>🟠 40–69% Mid</span>
+              <span>🔴 &lt;40% Low</span>
             </div>
           </div>
         </div>
