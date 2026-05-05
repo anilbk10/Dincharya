@@ -11,6 +11,7 @@ function App() {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedHabit, setSelectedHabit] = useState<Habit | null>(null);
+  const [isMonthlyReviewExpanded, setIsMonthlyReviewExpanded] = useState(false);
   const systemTodayDate = new Date();
   const currentYearNumber = systemTodayDate.getFullYear();
   const [selectedActivityYear, setSelectedActivityYear] = useState<number>(currentYearNumber);
@@ -209,16 +210,34 @@ function App() {
     const daysInMonth = new Date(year, month + 1, 0).getDate();
     let totalScore = 0;
     let countedDays = 0;
+    let consistentDays = 0;
+    let midDays = 0;
+    let lowDays = 0;
+    
     for (let d = 1; d <= daysInMonth; d++) {
       const dStr = format(new Date(year, month, d), 'yyyy-MM-dd');
       if (dStr > format(systemTodayDate, 'yyyy-MM-dd')) break;
       if (habits.length > 0) {
-        totalScore += calculateDayScore(dStr);
+        const score = calculateDayScore(dStr);
+        totalScore += score;
         countedDays++;
+        
+        const pct = Math.round(score * 100);
+        if (pct >= 70) consistentDays++;
+        else if (pct >= 40) midDays++;
+        else lowDays++;
       }
     }
     const avg = countedDays > 0 ? Math.round((totalScore / countedDays) * 100) : 0;
-    return { name: format(monthDate, 'MMM'), pct: avg };
+    return { 
+      name: format(monthDate, 'MMM'), 
+      fullMonth: format(monthDate, 'MMMM yyyy'),
+      pct: avg,
+      consistentDays,
+      midDays,
+      lowDays,
+      countedDays
+    };
   });
 
 
@@ -515,7 +534,20 @@ function App() {
           </div>
 
           <div className="glass-panel">
-            <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', marginBottom: '0.2rem', textAlign: 'center' }}>Monthly Review</h3>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.2rem' }}>
+              <div style={{ flex: 1 }}></div>
+              <h3 style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0, textAlign: 'center', flex: 2 }}>Monthly Review</h3>
+              <div style={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
+                <button
+                  className="btn-icon"
+                  style={{ padding: '4px', margin: '-4px', color: 'var(--text-secondary)' }}
+                  onClick={() => setIsMonthlyReviewExpanded(true)}
+                  title="Expand Monthly Review"
+                >
+                  <Maximize2 size={16} />
+                </button>
+              </div>
+            </div>
             <p style={{ fontSize: '0.68rem', color: 'var(--text-secondary)', opacity: 0.55, textAlign: 'center', marginBottom: '0.75rem', margin: '0 0 0.75rem' }}>Avg daily completion % — last 12 months</p>
             <div style={{ height: '140px' }}>
               <ResponsiveContainer width="100%" height="100%">
@@ -785,6 +817,82 @@ function App() {
           </div>
         </div>
       )}
+
+      {/* Monthly Review Expanded Modal */}
+      {isMonthlyReviewExpanded && (
+        <div className="modal-overlay" onClick={() => setIsMonthlyReviewExpanded(false)}>
+          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px', width: '90%' }}>
+            <div className="header-flex" style={{ marginBottom: '1.5rem' }}>
+              <h2>Monthly Consistency Detail</h2>
+              <button className="btn-icon" onClick={() => setIsMonthlyReviewExpanded(false)}><Plus size={24} style={{ transform: 'rotate(45deg)' }} /></button>
+            </div>
+            
+            <div style={{ height: '240px', marginBottom: '2rem' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={monthlyReviewData} barSize={24}>
+                  <XAxis dataKey="fullMonth" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis domain={[0, 100]} stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
+                  <Tooltip
+                    cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                    contentStyle={{ borderRadius: '8px', background: 'var(--surface-color)', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
+                    formatter={(val: unknown) => [`${val}%`, 'Avg Completion']}
+                  />
+                  <Bar dataKey="pct" radius={[4, 4, 0, 0]}>
+                    {monthlyReviewData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={
+                          entry.pct >= 70 ? 'var(--primary)' :
+                          entry.pct >= 40 ? '#FF9800' :
+                          entry.pct > 0  ? '#F44336' :
+                          'rgba(255,255,255,0.08)'
+                        }
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1rem', maxHeight: '40vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
+              {[...monthlyReviewData].reverse().map((entry) => (
+                <div key={entry.fullMonth} style={{ background: 'var(--bg-color)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>{entry.fullMonth}</div>
+                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: entry.pct >= 70 ? 'var(--primary)' : entry.pct >= 40 ? '#FF9800' : entry.pct > 0 ? '#F44336' : 'var(--text-secondary)', marginBottom: '0.5rem' }}>
+                    {entry.pct}%
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>🟢 Consistent</span>
+                      <span style={{ fontWeight: 600 }}>{entry.consistentDays}d</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>🟠 Mid</span>
+                      <span style={{ fontWeight: 600 }}>{entry.midDays}d</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                      <span>🔴 Low</span>
+                      <span style={{ fontWeight: 600 }}>{entry.lowDays}d</span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
+              <button 
+                type="button" 
+                className="btn-primary" 
+                style={{ width: '100%', maxWidth: '200px' }}
+                onClick={() => setIsMonthlyReviewExpanded(false)}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 }
