@@ -818,26 +818,40 @@ function App() {
         </div>
       )}
 
-      {/* Monthly Review Expanded Modal */}
+      {/* Monthly Review Expanded Full Page */}
       {isMonthlyReviewExpanded && (
-        <div className="modal-overlay" onClick={() => setIsMonthlyReviewExpanded(false)}>
-          <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '800px', width: '90%' }}>
-            <div className="header-flex" style={{ marginBottom: '1.5rem' }}>
-              <h2>Monthly Consistency Detail</h2>
-              <button className="btn-icon" onClick={() => setIsMonthlyReviewExpanded(false)}><Plus size={24} style={{ transform: 'rotate(45deg)' }} /></button>
+        <div style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'var(--bg-color)',
+          zIndex: 9999,
+          overflowY: 'auto',
+          padding: '2rem 1rem'
+        }}>
+          <div style={{ maxWidth: '1000px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+            <div className="header-flex" style={{ borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+              <button 
+                className="btn-icon" 
+                onClick={() => setIsMonthlyReviewExpanded(false)}
+                style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', background: 'var(--surface-color)', padding: '0.5rem 1rem', borderRadius: '8px', color: 'var(--text-primary)', border: '1px solid var(--border-color)' }}
+              >
+                <ChevronLeft size={20} /> Back to Dashboard
+              </button>
+              <h2 style={{ margin: 0, textAlign: 'center', flex: 1 }}>Yearly Overview</h2>
+              <div style={{ width: '170px' }}></div> {/* Spacer for centering */}
             </div>
             
-            <div style={{ height: '240px', marginBottom: '2rem' }}>
+            <div style={{ height: '350px', background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '2rem 1rem', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyReviewData} barSize={24}>
-                  <XAxis dataKey="fullMonth" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} />
+                <BarChart data={monthlyReviewData} barSize={32} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <XAxis dataKey="fullMonth" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
                   <YAxis domain={[0, 100]} stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
                   <Tooltip
                     cursor={{ fill: 'rgba(255,255,255,0.04)' }}
                     contentStyle={{ borderRadius: '8px', background: 'var(--surface-color)', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
                     formatter={(val: unknown) => [`${val}%`, 'Avg Completion']}
                   />
-                  <Bar dataKey="pct" radius={[4, 4, 0, 0]}>
+                  <Bar dataKey="pct" radius={[6, 6, 0, 0]}>
                     {monthlyReviewData.map((entry, index) => (
                       <Cell
                         key={`cell-${index}`}
@@ -854,40 +868,32 @@ function App() {
               </ResponsiveContainer>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))', gap: '1rem', maxHeight: '40vh', overflowY: 'auto', paddingRight: '0.5rem' }}>
-              {[...monthlyReviewData].reverse().map((entry) => (
-                <div key={entry.fullMonth} style={{ background: 'var(--bg-color)', padding: '1rem', borderRadius: '12px', border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>{entry.fullMonth}</div>
-                  <div style={{ fontSize: '1.5rem', fontWeight: 700, color: entry.pct >= 70 ? 'var(--primary)' : entry.pct >= 40 ? '#FF9800' : entry.pct > 0 ? '#F44336' : 'var(--text-secondary)', marginBottom: '0.5rem' }}>
-                    {entry.pct}%
+            <div>
+              <h3 style={{ marginBottom: '1.5rem', color: 'var(--text-primary)' }}>Monthly Details</h3>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(200px, 1fr))', gap: '1.5rem' }}>
+                {[...monthlyReviewData].reverse().map((entry) => (
+                  <div key={entry.fullMonth} style={{ background: 'var(--surface-color)', padding: '1.5rem', borderRadius: '16px', border: '1px solid var(--border-color)', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
+                    <div style={{ fontSize: '1rem', fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '0.25rem' }}>{entry.fullMonth}</div>
+                    <div style={{ fontSize: '2.5rem', fontWeight: 800, color: entry.pct >= 70 ? 'var(--primary)' : entry.pct >= 40 ? '#FF9800' : entry.pct > 0 ? '#F44336' : 'var(--text-secondary)', marginBottom: '1rem' }}>
+                      {entry.pct}%
+                    </div>
+                    <div style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><div style={{width: 8, height: 8, borderRadius: '50%', background: 'var(--primary)'}}></div> Consistent</span>
+                        <span style={{ fontWeight: 600 }}>{entry.consistentDays} days</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><div style={{width: 8, height: 8, borderRadius: '50%', background: '#FF9800'}}></div> Mid</span>
+                        <span style={{ fontWeight: 600 }}>{entry.midDays} days</span>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}><div style={{width: 8, height: 8, borderRadius: '50%', background: '#F44336'}}></div> Low</span>
+                        <span style={{ fontWeight: 600 }}>{entry.lowDays} days</span>
+                      </div>
+                    </div>
                   </div>
-                  <div style={{ fontSize: '0.7rem', color: 'var(--text-secondary)', display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>🟢 Consistent</span>
-                      <span style={{ fontWeight: 600 }}>{entry.consistentDays}d</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>🟠 Mid</span>
-                      <span style={{ fontWeight: 600 }}>{entry.midDays}d</span>
-                    </div>
-                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                      <span>🔴 Low</span>
-                      <span style={{ fontWeight: 600 }}>{entry.lowDays}d</span>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-            
-            <div style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-              <button 
-                type="button" 
-                className="btn-primary" 
-                style={{ width: '100%', maxWidth: '200px' }}
-                onClick={() => setIsMonthlyReviewExpanded(false)}
-              >
-                Close
-              </button>
+                ))}
+              </div>
             </div>
           </div>
         </div>
