@@ -1,3 +1,6 @@
+/// <reference types="react" />
+/** @jsx React.createElement */
+/** @jsxFrag React.Fragment */
 import React, { useState, useRef, useEffect } from 'react';
 import { format, subDays, addDays } from 'date-fns';
 import { Check, Plus, ChevronLeft, ChevronRight, Activity, CalendarDays, CheckCircle2, TrendingUp, Info, Timer, Play, Pause, Square, Maximize2, Minimize2 } from 'lucide-react';
