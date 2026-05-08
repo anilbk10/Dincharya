@@ -205,9 +205,21 @@ function App() {
     return score / habits.length;
   };
 
-  // Monthly consistency: last 12 months, average daily completion %
-  const monthlyReviewData = Array.from({ length: 12 }).map((_, i) => {
-    const monthDate = new Date(systemTodayDate.getFullYear(), systemTodayDate.getMonth() - (11 - i), 1);
+  // Monthly consistency: specific months auto-adjustable with current year
+  const currentYear = systemTodayDate.getFullYear();
+  const specificMonths = [
+    new Date(currentYear - 1, 5, 1), // June previous year
+    new Date(currentYear - 1, 6, 1), // July previous year
+    new Date(currentYear - 1, 8, 1), // September previous year
+    new Date(currentYear - 1, 10, 1), // November previous year
+    new Date(currentYear, 0, 1), // January current year
+    new Date(currentYear, 1, 1), // February current year
+    new Date(currentYear, 2, 1), // March current year
+    new Date(currentYear, 3, 1), // April current year
+    new Date(currentYear, 4, 1), // May current year
+  ];
+
+  const monthlyReviewData = specificMonths.map((monthDate) => {
     const year = monthDate.getFullYear();
     const month = monthDate.getMonth();
     const daysInMonth = new Date(year, month + 1, 0).getDate();
