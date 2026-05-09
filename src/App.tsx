@@ -475,6 +475,7 @@ function App() {
                     const monthName = firstDayOfCol && !firstDayOfCol.isPadding ? format(new Date(firstDayOfCol.date), 'MMM') : '';
                     const prevFirstDayOfCol = c > 0 ? activityData[(c - 1) * 7] : null;
                     const prevMonthName = prevFirstDayOfCol && !prevFirstDayOfCol.isPadding ? format(new Date(prevFirstDayOfCol.date), 'MMM') : '';
+                    const isMonthBoundary = c > 0 && monthName !== prevMonthName;
                     
                     return (
                       <div 
@@ -485,7 +486,8 @@ function App() {
                           fontSize: '0.65rem', 
                           color: 'var(--text-secondary)',
                           overflow: 'visible',
-                          whiteSpace: 'nowrap'
+                          whiteSpace: 'nowrap',
+                          marginLeft: isMonthBoundary ? '6px' : undefined
                         }}
                       >
                         {c === 0 || monthName !== prevMonthName ? monthName : ''}
@@ -494,19 +496,29 @@ function App() {
                   })}
                 </div>
                 <div style={{ display: 'grid', gridTemplateRows: 'repeat(7, 11px)', gridAutoFlow: 'column', gap: '3px' }}>
-                  {activityData.map((d, i) => (
-                    <div 
-                      key={i} 
-                      title={d.isPadding ? '' : `${d.date}: ${Math.round(d.ratio * 100)}% completed`}
-                      style={{ 
-                        width: '11px', 
-                        height: '11px', 
-                        borderRadius: '2px', 
-                        background: d.isPadding ? 'transparent' : getColorForLevel(d.level),
-                        border: d.isPadding ? 'none' : '' 
-                      }} 
-                    />
-                  ))}
+                  {activityData.map((d, i) => {
+                    const colIndex = Math.floor(i / 7);
+                    const firstDayOfCol = activityData[colIndex * 7];
+                    const monthName = firstDayOfCol && !firstDayOfCol.isPadding ? format(new Date(firstDayOfCol.date), 'MMM') : '';
+                    const prevFirstDayOfCol = colIndex > 0 ? activityData[(colIndex - 1) * 7] : null;
+                    const prevMonthName = prevFirstDayOfCol && !prevFirstDayOfCol.isPadding ? format(new Date(prevFirstDayOfCol.date), 'MMM') : '';
+                    const isMonthBoundary = colIndex > 0 && monthName !== prevMonthName;
+
+                    return (
+                      <div 
+                        key={i} 
+                        title={d.isPadding ? '' : `${d.date}: ${Math.round(d.ratio * 100)}% completed`}
+                        style={{ 
+                          width: '11px', 
+                          height: '11px', 
+                          borderRadius: '2px', 
+                          background: d.isPadding ? 'transparent' : getColorForLevel(d.level),
+                          border: d.isPadding ? 'none' : '',
+                          marginLeft: isMonthBoundary ? '6px' : undefined
+                        }} 
+                      />
+                    );
+                  })}
                 </div>
               </div>
             </div>
