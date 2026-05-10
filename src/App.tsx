@@ -257,29 +257,29 @@ function App() {
 
 
   const systemToday = new Date();
-  
-  let activityEndDate = systemToday;
-  if (selectedActivityYear !== currentYearNumber) {
-    activityEndDate = new Date(selectedActivityYear, 11, 31); // Dec 31
-  }
+  const yearStartDate = new Date(selectedActivityYear, 0, 1);
+  const activityEndDate = selectedActivityYear !== currentYearNumber ? new Date(selectedActivityYear, 11, 31) : systemToday;
 
-  const endWeekday = activityEndDate.getDay(); // 0-6
-  const totalDays = (52 * 7) + (endWeekday + 1); // Exact days to start on 52 weeks ago Sunday
+  const actualDaysCount = Math.round((activityEndDate.getTime() - yearStartDate.getTime()) / (1000 * 60 * 60 * 24)) + 1;
+  const leadingPadding = yearStartDate.getDay();
+  const trailingPadding = (7 - ((leadingPadding + actualDaysCount) % 7)) % 7;
 
-  const activityData = Array.from({ length: totalDays }).map((_, i) => {
-    const d = subDays(activityEndDate, totalDays - 1 - i);
-    const dStr = format(d, 'yyyy-MM-dd');
-    const ratio = calculateDayScore(dStr);
-    let level = 0;
-    if (ratio > 0 && ratio < 0.4) level = 1;
-    else if (ratio >= 0.4 && ratio < 0.75) level = 2;
-    else if (ratio >= 0.75) level = 3;
-    return { date: dStr, level, ratio, isPadding: false };
-  });
+  const activityData = [
+    ...Array.from({ length: leadingPadding }, () => ({ date: '', level: 0, ratio: 0, isPadding: true })),
+    ...Array.from({ length: actualDaysCount }).map((_, i) => {
+      const d = addDays(yearStartDate, i);
+      const dStr = format(d, 'yyyy-MM-dd');
+      const ratio = calculateDayScore(dStr);
+      let level = 0;
+      if (ratio > 0 && ratio < 0.4) level = 1;
+      else if (ratio >= 0.4 && ratio < 0.75) level = 2;
+      else if (ratio >= 0.75) level = 3;
+      return { date: dStr, level, ratio, isPadding: false };
+    }),
+    ...Array.from({ length: trailingPadding }, () => ({ date: '', level: 0, ratio: 0, isPadding: true })),
+  ];
 
-  for(let i = endWeekday + 1; i < 7; i++) {
-    activityData.push({ date: '', level: 0, ratio: 0, isPadding: true });
-  }
+  const weekCount = Math.ceil(activityData.length / 7);
 
   const getColorForLevel = (level: number) => {
     if (level === 1) return 'rgba(76, 175, 80, 0.3)';
@@ -470,7 +470,7 @@ function App() {
               </div>
               <div ref={activityScrollRef} style={{ position: 'relative', overflowX: 'auto', paddingBottom: '0.5rem', flex: 1, scrollBehavior: 'smooth' }}>
                 <div style={{ display: 'flex', gap: '3px', marginBottom: '4px' }}>
-                  {Array.from({ length: 53 }).map((_, c) => {
+                  {Array.from({ length: weekCount }).map((_, c) => {
                     const firstDayOfCol = activityData[c * 7];
                     const monthName = firstDayOfCol && !firstDayOfCol.isPadding ? format(new Date(firstDayOfCol.date), 'MMM') : '';
                     const prevFirstDayOfCol = c > 0 ? activityData[(c - 1) * 7] : null;
