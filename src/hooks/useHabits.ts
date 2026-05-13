@@ -53,6 +53,7 @@ export function useHabits() {
     setEntries((prev) => {
       const existingEntryIndex = prev.findIndex((e) => e.habitId === habitId && e.date === date);
       
+      // Get habit from current habits state
       const habit = habits.find(h => h.id === habitId);
       const isYesNo = habit?.type === 'YES_NO';
 
@@ -63,13 +64,19 @@ export function useHabits() {
         
         if (isYesNo && completed === undefined) {
           // Toggle if not explicitly set
-          entry.completed = !entry.completed;
+          updatedEntries[existingEntryIndex] = {
+            ...entry,
+            completed: !entry.completed,
+            updatedAt: new Date().toISOString(),
+          };
         } else {
-          entry.completed = completed ?? entry.completed;
+          updatedEntries[existingEntryIndex] = {
+            ...entry,
+            completed: completed ?? entry.completed,
+            value: value ?? entry.value,
+            updatedAt: new Date().toISOString(),
+          };
         }
-
-        entry.value = value ?? entry.value;
-        entry.updatedAt = new Date().toISOString();
         return updatedEntries;
       } else {
         // Create new entry

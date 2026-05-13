@@ -197,7 +197,7 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: transparent;
+  color: var(--text-secondary);
   transition: all 0.2s;
 }
 
