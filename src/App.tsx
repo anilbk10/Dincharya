@@ -7,7 +7,7 @@ import { Check, Plus, ChevronLeft, ChevronRight, Activity, CalendarDays, CheckCi
 import { useHabits } from './hooks/useHabits';
 import { calculateDailyProductivity } from './utils/productivity';
 import type { HabitType, Habit } from './models/types';
-import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line, CartesianGrid } from 'recharts';
 
 function App() {
   const { habits, entries, addHabit, toggleHabitEntry, getEntriesForDate, deleteHabit } = useHabits();
@@ -870,28 +870,46 @@ function App() {
             
             <div style={{ height: '350px', background: 'var(--surface-color)', border: '1px solid var(--border-color)', borderRadius: '16px', padding: '2rem 1rem', boxShadow: '0 8px 32px rgba(0,0,0,0.1)' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={monthlyReviewData} barSize={32} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <XAxis dataKey="fullMonth" stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} dy={10} />
+                <LineChart data={monthlyReviewData} margin={{ top: 12, right: 16, left: 4, bottom: 72 }}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border-color)" opacity={0.45} vertical={false} />
+                  <XAxis
+                    dataKey="fullMonth"
+                    stroke="var(--text-secondary)"
+                    fontSize={11}
+                    tickLine={false}
+                    axisLine={false}
+                    angle={-32}
+                    textAnchor="end"
+                    interval={0}
+                    height={70}
+                  />
                   <YAxis domain={[0, 100]} stroke="var(--text-secondary)" fontSize={12} tickLine={false} axisLine={false} tickFormatter={(val) => `${val}%`} />
                   <Tooltip
-                    cursor={{ fill: 'rgba(255,255,255,0.04)' }}
+                    cursor={{ stroke: 'var(--border-color)', strokeWidth: 1, strokeDasharray: '4 4' }}
                     contentStyle={{ borderRadius: '8px', background: 'var(--surface-color)', border: '1px solid var(--border-color)', fontSize: '0.85rem' }}
                     formatter={(val: unknown) => [`${val}%`, 'Avg Completion']}
+                    labelFormatter={(_, payload) => (payload[0]?.payload?.fullMonth as string) ?? ''}
                   />
-                  <Bar dataKey="pct" radius={[6, 6, 0, 0]}>
-                    {monthlyReviewData.map((entry, index) => (
-                      <Cell
-                        key={`cell-${index}`}
-                        fill={
-                          entry.pct >= 70 ? 'var(--primary)' :
-                          entry.pct >= 40 ? '#FF9800' :
-                          entry.pct > 0  ? '#F44336' :
-                          'rgba(255,255,255,0.08)'
-                        }
-                      />
-                    ))}
-                  </Bar>
-                </BarChart>
+                  <Line
+                    type="monotone"
+                    dataKey="pct"
+                    name="Avg completion"
+                    stroke="var(--primary)"
+                    strokeWidth={2.5}
+                    connectNulls
+                    dot={(props: { cx?: number; cy?: number; payload?: { pct: number } }) => {
+                      const { cx, cy, payload } = props;
+                      if (cx == null || cy == null || !payload) return null;
+                      const fill =
+                        payload.pct >= 70 ? 'var(--primary)' :
+                        payload.pct >= 40 ? '#FF9800' :
+                        payload.pct > 0 ? '#F44336' :
+                        'rgba(255,255,255,0.2)';
+                      return <circle cx={cx} cy={cy} r={6} fill={fill} stroke="var(--surface-color)" strokeWidth={2} />;
+                    }}
+                    activeDot={{ r: 8, stroke: 'var(--primary)', strokeWidth: 2, fill: 'var(--surface-color)' }}
+                  />
+                </LineChart>
               </ResponsiveContainer>
             </div>
 
