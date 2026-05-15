@@ -2,6 +2,21 @@ import type { Habit, HabitEntry } from '../models/types';
 
 export type ProductivityScore = 'Productive' | 'Mid' | 'Unproductive' | 'No Data';
 
+const isHabitDoneForDate = (habit: Habit, entries: HabitEntry[], date: string): boolean => {
+  const entry = entries.find((e) => e.habitId === habit.id && e.date === date);
+  if (!entry) return false;
+
+  if (habit.type === 'YES_NO') {
+    return Boolean(entry.completed);
+  }
+
+  if (habit.type === 'MEASUREMENT' && habit.target && habit.target > 0) {
+    return entry.value !== undefined && entry.value >= habit.target;
+  }
+
+  return false;
+};
+
 export const calculateDailyProductivity = (
   habits: Habit[],
   entries: HabitEntry[],
@@ -9,32 +24,15 @@ export const calculateDailyProductivity = (
 ): ProductivityScore => {
   if (habits.length === 0) return 'No Data';
 
-  let totalScore = 0;
-  let maxPossibleScore = habits.length;
+  const completedCount = habits.filter((habit) =>
+    isHabitDoneForDate(habit, entries, date)
+  ).length;
 
-  habits.forEach((habit) => {
-    const entry = entries.find((e) => e.habitId === habit.id && e.date === date);
-
-    if (habit.type === 'YES_NO') {
-      if (entry?.completed) {
-        totalScore += 1;
-      }
-    } else if (habit.type === 'MEASUREMENT' && habit.target && habit.target > 0) {
-      if (entry && entry.value !== undefined) {
-        // Cap the score for a single habit at 1.0 (so someone can't get 500% productive by walking 50k steps)
-        const completionRatio = Math.min(1.0, entry.value / habit.target);
-        totalScore += completionRatio;
-      }
-    }
-  });
-
-  const percentage = maxPossibleScore > 0 ? (totalScore / maxPossibleScore) * 100 : 0;
-
-  if (percentage >= 75) {
+  if (completedCount === habits.length) {
     return 'Productive';
-  } else if (percentage >= 40) {
-    return 'Mid';
-  } else {
-    return 'Unproductive';
   }
+  if (completedCount > 0) {
+    return 'Mid';
+  }
+  return 'Unproductive';
 };
